@@ -17,7 +17,6 @@ namespace XOR_NeuralNetwork
         static double Beta = 1.0;
         static Random rand = new Random();
 
-        // Sieć 2-2-1
         static double[,] wInputHidden = new double[2, 2];
         static double[] bHidden = new double[2];
         static double[] wHiddenOutput = new double[2];
@@ -37,7 +36,7 @@ namespace XOR_NeuralNetwork
         {
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 2; j++)
-                    wInputHidden[i, j] = rand.NextDouble() * 10 - 5; // [-5, 5]
+                    wInputHidden[i, j] = rand.NextDouble() * 10 - 5;
             for (int j = 0; j < 2; j++)
                 bHidden[j] = rand.NextDouble() * 10 - 5;
             for (int j = 0; j < 2; j++)
@@ -45,10 +44,32 @@ namespace XOR_NeuralNetwork
             bOutput = rand.NextDouble() * 10 - 5;
         }
 
+        static double Forward(double[] input)
+        {
+            double[] hidden = new double[2];
+            for (int j = 0; j < 2; j++)
+            {
+                double sum = bHidden[j];
+                for (int i = 0; i < 2; i++)
+                    sum += input[i] * wInputHidden[i, j];
+                hidden[j] = Sigmoid(sum);
+            }
+
+            double sumOut = bOutput;
+            for (int j = 0; j < 2; j++)
+                sumOut += hidden[j] * wHiddenOutput[j];
+            return Sigmoid(sumOut);
+        }
+
         static void Main(string[] args)
         {
             InitializeWeights();
-            Console.WriteLine("Wagi i biasy zostały zainicjalizowane.");
+            Console.WriteLine("Test forward pass:");
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                double output = Forward(inputs[i]);
+                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Wyjście sieci: {output:F3}");
+            }
         }
     }
 }
