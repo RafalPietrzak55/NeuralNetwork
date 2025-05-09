@@ -15,6 +15,7 @@ namespace XOR_NeuralNetwork
         static double[] targets = new double[] { 0, 1, 1, 0 };
 
         static double Beta = 1.0;
+        static double LearningRate = 0.3;
         static Random rand = new Random();
 
         static double[,] wInputHidden = new double[2, 2];
@@ -44,9 +45,9 @@ namespace XOR_NeuralNetwork
             bOutput = rand.NextDouble() * 10 - 5;
         }
 
-        static double Forward(double[] input)
+        static double Forward(double[] input, out double[] hidden)
         {
-            double[] hidden = new double[2];
+            hidden = new double[2];
             for (int j = 0; j < 2; j++)
             {
                 double sum = bHidden[j];
@@ -61,15 +62,37 @@ namespace XOR_NeuralNetwork
             return Sigmoid(sumOut);
         }
 
+        static void Train(double[] input, double target)
+        {
+            // Forward
+            double[] hidden;
+            double output = Forward(input, out hidden);
+
+            // Backward
+            double error = target - output;
+            double deltaOutput = error * SigmoidDerivative(output);
+
+            double[] deltaHidden = new double[2];
+            for (int j = 0; j < 2; j++)
+                deltaHidden[j] = deltaOutput * wHiddenOutput[j] * SigmoidDerivative(hidden[j]);
+
+          
+            for (int j = 0; j < 2; j++)
+                wHiddenOutput[j] += LearningRate * deltaOutput * hidden[j];
+            bOutput += LearningRate * deltaOutput;
+
+            
+            for (int i = 0; i < 2; i++)
+                for (int j = 0; j < 2; j++)
+                    wInputHidden[i, j] += LearningRate * deltaHidden[j] * input[i];
+            for (int j = 0; j < 2; j++)
+                bHidden[j] += LearningRate * deltaHidden[j];
+        }
+
         static void Main(string[] args)
         {
             InitializeWeights();
-            Console.WriteLine("Test forward pass:");
-            for (int i = 0; i < inputs.Length; i++)
-            {
-                double output = Forward(inputs[i]);
-                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Wyjście sieci: {output:F3}");
-            }
+            Console.WriteLine("Sieć gotowa do uczenia.");
         }
     }
 }
