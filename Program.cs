@@ -15,6 +15,13 @@ namespace XOR_NeuralNetwork
         static double[] targets = new double[] { 0, 1, 1, 0 };
 
         static double Beta = 1.0;
+        static Random rand = new Random();
+
+        // Sieć 2-2-1
+        static double[,] wInputHidden = new double[2, 2];
+        static double[] bHidden = new double[2];
+        static double[] wHiddenOutput = new double[2];
+        static double bOutput;
 
         static double Sigmoid(double x)
         {
@@ -26,14 +33,22 @@ namespace XOR_NeuralNetwork
             return Beta * y * (1 - y);
         }
 
+        static void InitializeWeights()
+        {
+            for (int i = 0; i < 2; i++)
+                for (int j = 0; j < 2; j++)
+                    wInputHidden[i, j] = rand.NextDouble() * 10 - 5; // [-5, 5]
+            for (int j = 0; j < 2; j++)
+                bHidden[j] = rand.NextDouble() * 10 - 5;
+            for (int j = 0; j < 2; j++)
+                wHiddenOutput[j] = rand.NextDouble() * 10 - 5;
+            bOutput = rand.NextDouble() * 10 - 5;
+        }
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Test funkcji sigmoidalnej:");
-            for (double x = -2; x <= 2; x += 1)
-            {
-                double y = Sigmoid(x);
-                Console.WriteLine($"x={x}, sigmoid(x)={y:F3}, sigmoid'(x)={SigmoidDerivative(y):F3}");
-            }
+            InitializeWeights();
+            Console.WriteLine("Wagi i biasy zostały zainicjalizowane.");
         }
     }
 }
