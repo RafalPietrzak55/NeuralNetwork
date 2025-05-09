@@ -14,12 +14,25 @@ namespace XOR_NeuralNetwork
 
         static double[] targets = new double[] { 0, 1, 1, 0 };
 
+        static double Beta = 1.0;
+
+        static double Sigmoid(double x)
+        {
+            return 1.0 / (1.0 + Math.Exp(-Beta * x));
+        }
+
+        static double SigmoidDerivative(double y)
+        {
+            return Beta * y * (1 - y);
+        }
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Dane XOR:");
-            for (int i = 0; i < inputs.Length; i++)
+            Console.WriteLine("Test funkcji sigmoidalnej:");
+            for (double x = -2; x <= 2; x += 1)
             {
-                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Oczekiwane wyjście: {targets[i]}");
+                double y = Sigmoid(x);
+                Console.WriteLine($"x={x}, sigmoid(x)={y:F3}, sigmoid'(x)={SigmoidDerivative(y):F3}");
             }
         }
     }
