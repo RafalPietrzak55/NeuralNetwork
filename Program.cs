@@ -16,6 +16,7 @@ namespace XOR_NeuralNetwork
 
         static double Beta = 1.0;
         static double LearningRate = 0.3;
+        static int Epochs = 50000;
         static Random rand = new Random();
 
         static double[,] wInputHidden = new double[2, 2];
@@ -64,11 +65,9 @@ namespace XOR_NeuralNetwork
 
         static void Train(double[] input, double target)
         {
-            // Forward
             double[] hidden;
             double output = Forward(input, out hidden);
 
-            // Backward
             double error = target - output;
             double deltaOutput = error * SigmoidDerivative(output);
 
@@ -76,12 +75,10 @@ namespace XOR_NeuralNetwork
             for (int j = 0; j < 2; j++)
                 deltaHidden[j] = deltaOutput * wHiddenOutput[j] * SigmoidDerivative(hidden[j]);
 
-          
             for (int j = 0; j < 2; j++)
                 wHiddenOutput[j] += LearningRate * deltaOutput * hidden[j];
             bOutput += LearningRate * deltaOutput;
 
-            
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 2; j++)
                     wInputHidden[i, j] += LearningRate * deltaHidden[j] * input[i];
@@ -92,7 +89,16 @@ namespace XOR_NeuralNetwork
         static void Main(string[] args)
         {
             InitializeWeights();
-            Console.WriteLine("Sieć gotowa do uczenia.");
+
+            for (int epoch = 0; epoch < Epochs; epoch++)
+            {
+                for (int i = 0; i < inputs.Length; i++)
+                {
+                    Train(inputs[i], targets[i]);
+                }
+            }
+
+            Console.WriteLine("Uczenie zakończone.");
         }
     }
 }
