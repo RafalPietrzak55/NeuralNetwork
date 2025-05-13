@@ -86,6 +86,12 @@ namespace XOR_NeuralNetwork
                 bHidden[j] += LearningRate * deltaHidden[j];
         }
 
+        static double Forward(double[] input)
+        {
+            double[] hidden;
+            return Forward(input, out hidden);
+        }
+
         static void Main(string[] args)
         {
             InitializeWeights();
@@ -98,7 +104,13 @@ namespace XOR_NeuralNetwork
                 }
             }
 
-            Console.WriteLine("Uczenie zakończone.");
+            Console.WriteLine("Testowanie po nauce:");
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                double output = Forward(inputs[i]);
+                double error = Math.Abs(targets[i] - output);
+                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Wyjście: {output:F3}, Oczekiwane: {targets[i]}, Błąd: {error:F3}");
+            }
         }
     }
 }
