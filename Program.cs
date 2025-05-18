@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XOR_MLP
+namespace XOR_NeuralNetwork
 {
     class Program
     {
