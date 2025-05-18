@@ -4,6 +4,10 @@ namespace XOR_NeuralNetwork
 {
     class Program
     {
+        static int inputSize = 2;
+        static int hiddenSize = 2;
+        static int outputSize = 1;
+
         static double[][] inputs = new double[][]
         {
             new double[] {0, 0},
@@ -12,7 +16,13 @@ namespace XOR_NeuralNetwork
             new double[] {1, 1}
         };
 
-        static double[] targets = new double[] { 0, 1, 1, 0 };
+        static double[][] targets = new double[][]
+        {
+            new double[] {0},
+            new double[] {1},
+            new double[] {1},
+            new double[] {0}
+        };
 
         static double Beta = 1.0;
         static double LearningRate = 0.3;
@@ -21,8 +31,8 @@ namespace XOR_NeuralNetwork
 
         static double[,] wInputHidden = new double[2, 2];
         static double[] bHidden = new double[2];
-        static double[] wHiddenOutput = new double[2];
-        static double bOutput;
+        static double[,] wHiddenOutput = new double[2, 1];
+        static double[] bOutput = new double[1];
 
         static double Sigmoid(double x)
         {
@@ -36,60 +46,89 @@ namespace XOR_NeuralNetwork
 
         static void InitializeWeights()
         {
-            for (int i = 0; i < 2; i++)
-                for (int j = 0; j < 2; j++)
+            for (int i = 0; i < inputSize; i++)
+                for (int j = 0; j < hiddenSize; j++)
                     wInputHidden[i, j] = rand.NextDouble() * 10 - 5;
-            for (int j = 0; j < 2; j++)
+            for (int j = 0; j < hiddenSize; j++)
                 bHidden[j] = rand.NextDouble() * 10 - 5;
-            for (int j = 0; j < 2; j++)
-                wHiddenOutput[j] = rand.NextDouble() * 10 - 5;
-            bOutput = rand.NextDouble() * 10 - 5;
+            for (int j = 0; j < hiddenSize; j++)
+                for (int k = 0; k < outputSize; k++)
+                    wHiddenOutput[j, k] = rand.NextDouble() * 10 - 5;
+            for (int k = 0; k < outputSize; k++)
+                bOutput[k] = rand.NextDouble() * 10 - 5;
         }
 
-        static double Forward(double[] input, out double[] hidden)
+        static double[] Forward(double[] input)
         {
-            hidden = new double[2];
-            for (int j = 0; j < 2; j++)
+            double[] hidden = new double[hiddenSize];
+            for (int j = 0; j < hiddenSize; j++)
             {
                 double sum = bHidden[j];
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < inputSize; i++)
                     sum += input[i] * wInputHidden[i, j];
                 hidden[j] = Sigmoid(sum);
             }
 
-            double sumOut = bOutput;
-            for (int j = 0; j < 2; j++)
-                sumOut += hidden[j] * wHiddenOutput[j];
-            return Sigmoid(sumOut);
+            double[] output = new double[outputSize];
+            for (int k = 0; k < outputSize; k++)
+            {
+                double sum = bOutput[k];
+                for (int j = 0; j < hiddenSize; j++)
+                    sum += hidden[j] * wHiddenOutput[j, k];
+                output[k] = Sigmoid(sum);
+            }
+            return output;
         }
 
-        static void Train(double[] input, double target)
+        static void Train(double[] input, double[] target)
         {
-            double[] hidden;
-            double output = Forward(input, out hidden);
+            // Forward
+            double[] hidden = new double[hiddenSize];
+            for (int j = 0; j < hiddenSize; j++)
+            {
+                double sum = bHidden[j];
+                for (int i = 0; i < inputSize; i++)
+                    sum += input[i] * wInputHidden[i, j];
+                hidden[j] = Sigmoid(sum);
+            }
 
-            double error = target - output;
-            double deltaOutput = error * SigmoidDerivative(output);
+            double[] output = new double[outputSize];
+            for (int k = 0; k < outputSize; k++)
+            {
+                double sum = bOutput[k];
+                for (int j = 0; j < hiddenSize; j++)
+                    sum += hidden[j] * wHiddenOutput[j, k];
+                output[k] = Sigmoid(sum);
+            }
 
-            double[] deltaHidden = new double[2];
-            for (int j = 0; j < 2; j++)
-                deltaHidden[j] = deltaOutput * wHiddenOutput[j] * SigmoidDerivative(hidden[j]);
+            // Backward
+            double[] deltaOutput = new double[outputSize];
+            for (int k = 0; k < outputSize; k++)
+            {
+                double error = target[k] - output[k];
+                deltaOutput[k] = error * SigmoidDerivative(output[k]);
+            }
 
-            for (int j = 0; j < 2; j++)
-                wHiddenOutput[j] += LearningRate * deltaOutput * hidden[j];
-            bOutput += LearningRate * deltaOutput;
+            double[] deltaHidden = new double[hiddenSize];
+            for (int j = 0; j < hiddenSize; j++)
+            {
+                double sum = 0.0;
+                for (int k = 0; k < outputSize; k++)
+                    sum += deltaOutput[k] * wHiddenOutput[j, k];
+                deltaHidden[j] = sum * SigmoidDerivative(hidden[j]);
+            }
 
-            for (int i = 0; i < 2; i++)
-                for (int j = 0; j < 2; j++)
+            for (int j = 0; j < hiddenSize; j++)
+                for (int k = 0; k < outputSize; k++)
+                    wHiddenOutput[j, k] += LearningRate * deltaOutput[k] * hidden[j];
+            for (int k = 0; k < outputSize; k++)
+                bOutput[k] += LearningRate * deltaOutput[k];
+
+            for (int i = 0; i < inputSize; i++)
+                for (int j = 0; j < hiddenSize; j++)
                     wInputHidden[i, j] += LearningRate * deltaHidden[j] * input[i];
-            for (int j = 0; j < 2; j++)
+            for (int j = 0; j < hiddenSize; j++)
                 bHidden[j] += LearningRate * deltaHidden[j];
-        }
-
-        static double Forward(double[] input)
-        {
-            double[] hidden;
-            return Forward(input, out hidden);
         }
 
         static void Main(string[] args)
@@ -107,9 +146,9 @@ namespace XOR_NeuralNetwork
             Console.WriteLine("Testowanie po nauce:");
             for (int i = 0; i < inputs.Length; i++)
             {
-                double output = Forward(inputs[i]);
-                double error = Math.Abs(targets[i] - output);
-                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Wyjście: {output:F3}, Oczekiwane: {targets[i]}, Błąd: {error:F3}");
+                var output = Forward(inputs[i]);
+                double error = Math.Abs(targets[i][0] - output[0]);
+                Console.WriteLine($"Wejście: [{inputs[i][0]}, {inputs[i][1]}], Wyjście: {output[0]:F3}, Oczekiwane: {targets[i][0]}, Błąd: {error:F3}");
             }
         }
     }
